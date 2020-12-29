@@ -1,0 +1,50 @@
+Issues with java concurreny:
+a. Dev needs to work on cucurrency issues like concurrnetmodicicationexception
+b. Thread creation/lifecycle needs to be focussed
+c. Inter thread communication needs to be worked on
+d. Performance issues
+
+- Akka benefits
+a. help create concurrent code without focussing on Threads at all and hence all the issues mentioned above can be ignored
+
+parts of akka
+a. actors, : each manager/task provider and other workers are nothing but actors
+eah of these actors have below features
+a. name
+b. path: like a seat number of an employee, it will be unique
+c. message quuee: quue can container string/integer and even byte of object that is serializable
+d. behaviousr , the funttionality that gets executed on these messages based on data in message
+
+Actors communicate among themselves using sending message in message queue
+manager publishes the data to queue of other worker actors, then behavious code is called for worker actors	then they publish back the return result in message queue of manager actors
+
+
+how actor works in concurrency
+first we split the data into smaller chunks
+-> just like parallel stream each chunk is provided to each actor and hence there is no sahred immutability
+- each ator has its own thread looping in its own independent quue,
+- no actor share the data, so manager task is to divide the work independently to worker actors
+- messages in actor quuee is immutable just like kafka , just to ensure thread safety
+properties
+a. each actor has its worn thread
+b. each actor has its own message quueue
+c. message in the queue is immutable
+d. none of the actor shares data, and hence no chance of shared concurrency
+e. data is to be processed using behaivour code one after the other
+in short proeprties of actor are combinationof kafka message and paralel stream and fork join framework
+
+-- the manager actor plays role of master thread just like fork join poool
+-- the message queue is immutable , processed in order is same like kafka
+-- no sharing of data among actors is example of parallel stream
+-- message processing one by one is example of synchronizaton in java , since each actor have independent thread they shud process message from queue ony one only
+-- any communication between actors/threads are not direct and are part of messages and since messgae are immutable and processed only in order there is no concurrency issues to solve
+
+- Message delivery in akka is not guranteed , specially in cluster environment(multiple different jvms running in different machines)
+	,however the propbaility of happening this in single JVM system is very less
+- Message ordering is guranteed though , meaning if the message is sent the order is 100 percent maintained however there are chances that message might not even be sent	
+
+- In akka it is never good practise to do hread.sleep as it cuase interrupted exception
+
+- the method onAnyMessage need to return the beavior object that must handle the next time another message comes 
+	we cna return this or return or Behavior.same(), in both cases if next message comes will come to the same existing behavior class
+- Any actor should no be shutdowned by itself instead the parent shud be shutting down , so that parent knows it do not have to still send message to child	
