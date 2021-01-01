@@ -48,3 +48,13 @@ in short proeprties of actor are combinationof kafka message and paralel stream 
 - the method onAnyMessage need to return the beavior object that must handle the next time another message comes 
 	we cna return this or return or Behavior.same(), in both cases if next message comes will come to the same existing behavior class
 - Any actor should no be shutdowned by itself instead the parent shud be shutting down , so that parent knows it do not have to still send message to child	
+
+-BehaviorTestKit is useful in unit test, loads only that specific behavior and other actors and behaviors will be ignored
+- remember behaviortestkit calls the actor and recive message synchronously meaning it is sequential and blocking in nature, just ot ensure test is executed properly
+
+- Akka provides ask patter to allow a timeout and we cna handle a retry if timeout happens/error happens
+- Akka ask pattern can also be used by main methods(that creates the worker actor) to get response back, some data back
+
+- Actor supervision is a concept where instead of spawning thousadns of actor we spawn fixed size like a pool
+	and controller asks smaller tasks to be done by worker actors, once task is done, child actor will die and manager will monitor this and create a new actor
+	this way of back and forth communication can happen using messages but that will be complex and hence we can use actor supervision to simplify this scenario

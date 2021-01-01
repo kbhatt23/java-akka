@@ -49,12 +49,18 @@ public class PrimeNumberWorkerBehaviour extends AbstractBehavior<PrimeNumberWork
 		return newReceiveBuilder()
 				.onAnyMessage(command ->{
 					String message = command.getMessage();
-					if("start".equals(message)) {
-					BigInteger bigInteger = new BigInteger(2000, new Random());
-					BigInteger nextProbablePrime = bigInteger.nextProbablePrime();
-					PrimeNumberManagerBehavior.Command resultCommand = new PrimeNumberManagerBehavior.MergeCommand( nextProbablePrime);
-					command.getSender().tell(resultCommand);
-				}
+					if ("start".equals(message)) {
+						Random random = new Random();
+						int nextInt = random.nextInt(10);
+						// 50 perent chance of data loss
+						if (nextInt >= 5) {
+							BigInteger bigInteger = new BigInteger(2000, new Random());
+							BigInteger nextProbablePrime = bigInteger.nextProbablePrime();
+							PrimeNumberManagerBehavior.Command resultCommand = new PrimeNumberManagerBehavior.MergeCommand(
+									nextProbablePrime);
+							command.getSender().tell(resultCommand);
+						}
+					}
 					return this;
 					})
 			.build();

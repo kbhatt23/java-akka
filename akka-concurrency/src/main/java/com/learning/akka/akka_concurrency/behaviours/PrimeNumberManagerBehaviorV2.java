@@ -14,8 +14,8 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 
 public class PrimeNumberManagerBehaviorV2 extends AbstractBehavior<PrimeNumberManagerBehaviorV2.Command>{
-
-	private SortedSet<BigInteger> primes = new TreeSet<BigInteger>();
+	private  ActorRef<SortedSet<BigInteger>> mainActor;
+	private SortedSet<BigInteger> primes ;
 	public static Behavior<Command> create() {
 		return Behaviors.setup(PrimeNumberManagerBehaviorV2::new);
 	}
@@ -26,13 +26,20 @@ public class PrimeNumberManagerBehaviorV2 extends AbstractBehavior<PrimeNumberMa
 		private static final long serialVersionUID = 1102785900841679230L;
 		
 		private final String message;
+		
+		private final ActorRef<SortedSet<BigInteger>> mainActor;
 
-		public StartTaskCommand(String message) {
+		public ActorRef<SortedSet<BigInteger>> getMainActor() {
+			return mainActor;
+		}
+
+		public StartTaskCommand(String message,ActorRef<SortedSet<BigInteger>> mainActor) {
 			this.message = message;
+			this.mainActor=mainActor;
 		}
 
 		public StartTaskCommand() {
-			this(null);
+			this(null,null);
 		}
 
 		public String getMessage() {
@@ -71,6 +78,10 @@ public class PrimeNumberManagerBehaviorV2 extends AbstractBehavior<PrimeNumberMa
 				.onMessage(StartTaskCommand.class, startTaskCommand ->{
 					String message = startTaskCommand.getMessage();
 					if("start".contentEquals(message)) {
+						this.primes= new TreeSet<BigInteger>();
+						//the actor present in main thread
+						this.mainActor=startTaskCommand.getMainActor();
+						
 						//generate 20 actors generatiung differnet prime numbers
 						for(int i=0 ; i <20; i++) {
 							//each actor have differnet path and thread and data and message quuee
@@ -91,8 +102,12 @@ public class PrimeNumberManagerBehaviorV2 extends AbstractBehavior<PrimeNumberMa
 					System.out.println("Manager Got Result: "+result);
 					primes.add(result);
 					if(primes.size() == 20) {
-						System.out.println("Manager Task completed , printing final Set");
-						primes.forEach(System.out::println);
+						//System.out.println("Manager Task completed , printing final Set");
+						
+						//primes.forEach(System.out::println);
+						//just send message to main actor
+						mainActor.tell(primes);
+						return Behaviors.stopped();
 					}
 					return this;
 				})
